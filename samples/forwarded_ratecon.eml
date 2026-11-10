@@ -1,0 +1,17 @@
+Received: from mx.truckermail.test (mx.truckermail.test [8.8.8.8])
+	by inbound.truckercamp.test with ESMTPS id ab12
+	for <driver@highwayindependent.test>; Thu, 15 Oct 2026 21:44:40 -0400
+Received: from mail.midwayhauling.test (mail.midwayhauling.test [1.1.1.1])
+	by mx.truckermail.test with ESMTPS id cd34
+	for <driver@highwayindependent.test>; Thu, 15 Oct 2026 20:44:18 -0500
+From: dispatch@midwayhauling.test
+To: driver@highwayindependent.test
+Subject: Rate con RC-88421 — Dallas to Atlanta
+Date: Thu, 15 Oct 2026 20:44:11 -0500
+Message-ID: <rc88421@midwayhauling.test>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+Attached is the rate confirmation for RC-88421.
+
+— Midway Dispatch
