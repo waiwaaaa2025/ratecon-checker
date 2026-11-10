@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rate Confirmation Checker — Trucker College</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Trucker College · Trucking Godmother</p>
+      <h1>Rate Confirmation Checker</h1>
+      <p class="lede">Upload a rate confirmation PDF. Optionally add the broker’s original file or the email it arrived in. This prototype looks for signs the PDF was edited.</p>
+      <p class="disclaimer">This tool reports <strong>signs of editing</strong>. It is not proof of fraud and is not a legal finding. A retyped or printed-to-PDF document may show no signs at all.</p>
+    </header>
+
+    <form class="card" action="/analyze" method="post" enctype="multipart/form-data">
+      <div class="field">
+        <label for="pdf">Rate confirmation PDF (required)
+          <span class="hint">The copy you received from a dispatcher or carrier.</span>
+        </label>
+        <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
+      </div>
+      <div class="field">
+        <label for="original">Broker original PDF (optional)
+          <span class="hint">If the broker emailed you the original, compare mode is the strongest check.</span>
+        </label>
+        <input id="original" name="original" type="file" accept=".pdf,application/pdf">
+      </div>
+      <div class="field">
+        <label for="email">Forwarded email, raw .eml (optional)
+          <span class="hint">Used only to read Received headers for sending IP and approximate location.</span>
+        </label>
+        <input id="email" name="email" type="file" accept=".eml,.txt,message/rfc822">
+      </div>
+      <button type="submit">Check for signs of editing</button>
+    </form>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if report %}
+      <section class="card" id="report">
+        <div class="score">
+          <div>
+            <p class="eyebrow">Result for {{ report.file }}</p>
+            <span class="badge {{ report.score.level }}">{{ report.score.level }}</span>
+            <h2>{{ report.score.label }}</h2>
+            <p>{{ report.score.summary }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>File details</h2>
+        <dl>
+          <dt>Pages</dt><dd>{{ report.preview.pages }}</dd>
+          <dt>Creator</dt><dd>{{ report.metadata.creator or "—" }}</dd>
+          <dt>Producer</dt><dd>{{ report.metadata.producer or "—" }}</dd>
+          <dt>Created</dt><dd>{{ report.metadata.creation_date or report.metadata.creation_date_raw or "—" }}</dd>
+          <dt>Modified</dt><dd>{{ report.metadata.mod_date or report.metadata.mod_date_raw or "—" }}</dd>
+          <dt>EOF markers</dt><dd>{{ report.incremental.eof_count }}</dd>
+          <dt>Amounts found</dt>
+          <dd>
+            {% if report.overlays.unique_amounts %}
+              {{ report.overlays.unique_amounts | join(", ") }}
+            {% else %}
+              —
+            {% endif %}
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Findings</h2>
+        {% for f in report.findings %}
+          <div class="finding">
+            <h3><span class="sev {{ f.severity }}">{{ f.severity }}</span> {{ f.title }}</h3>
+            <p>{{ f.detail }}</p>
+          </div>
+        {% else %}
+          <p>No findings were recorded.</p>
+        {% endfor %}
+      </section>
+
+      {% if report.incremental.amount_changes %}
+      <section class="card">
+        <h2>Earlier revision still in the file</h2>
+        <ul>
+          {% for ch in report.incremental.amount_changes %}
+            <li>{{ ch['from'] }} → {{ ch.to | join(", ") if ch.to is iterable and ch.to is not string else ch.to }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      {% if report.compare %}
+      <section class="card">
+        <h2>Compare mode</h2>
+        {% if report.compare.amount_changes %}
+          <ul>
+            {% for ch in report.compare.amount_changes %}
+              <li><strong>{{ ch['from'] }} → {{ ch.to }}</strong></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if report.compare.diff_lines %}
+          <pre class="diff">{% for ln in report.compare.diff_lines %}{% if ln.startswith('+') and not ln.startswith('+++') %}<span class="add">{{ ln }}</span>
+{% elif ln.startswith('-') and not ln.startswith('---') %}<span class="del">{{ ln }}</span>
+{% else %}{{ ln }}
+{% endif %}{% endfor %}</pre>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {% if report.email %}
+      <section class="card">
+        <h2>Email headers</h2>
+        <dl>
+          <dt>Subject</dt><dd>{{ report.email.subject or "—" }}</dd>
+          <dt>From</dt><dd>{{ report.email['from'] or "—" }}</dd>
+          <dt>Date</dt><dd>{{ report.email.date or "—" }}</dd>
+        </dl>
+        {% if report.email.sending_ips %}
+          <ul>
+            {% for row in report.email.sending_ips %}
+              <li>
+                {{ row.ip }}
+                {% if row.approximate_place %} — approximate location: {{ row.approximate_place }}{% endif %}
+                {% if row.isp %} ({{ row.isp }}){% endif %}
+                {% if row.source %} <span class="limits">[via {{ row.source }}]</span>{% endif %}
+                {% if row.error %} — {{ row.error }}{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+          <p class="limits">Approximate location of a mail server, not a person's address.</p>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      <section class="card">
+        <h2>Limits</h2>
+        <p class="limits">{{ report.score.limits }}</p>
+      </section>
+    {% endif %}
+
+    <footer>
+      Prototype for Trucker College. Not legal advice. Do not treat a score as proof of fraud.
+    </footer>
+  </div>
+</body>
+</html>

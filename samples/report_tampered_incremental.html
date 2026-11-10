@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rate Confirmation Checker — Trucker College</title>
+  <style>:root {
+  --navy: #0b1c33;
+  --navy-2: #12263f;
+  --navy-3: #1b3354;
+  --orange: #f26522;
+  --orange-2: #ffb289;
+  --cream: #f7f1e8;
+  --text: #eef3f8;
+  --muted: #b7c3d2;
+  --line: rgba(255, 255, 255, 0.08);
+  --high: #ff6b6b;
+  --medium: #f5c042;
+  --low: #7ec8e3;
+  --none: #5bd38a;
+  --info: #9bb0c7;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: radial-gradient(1200px 600px at 10% -10%, #1a3a66 0%, var(--navy) 45%), var(--navy);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+header { margin-bottom: 24px; }
+.eyebrow {
+  color: var(--orange);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+h1 { margin: 0 0 8px; font-size: 1.8rem; line-height: 1.2; }
+.lede { color: var(--muted); margin: 0 0 8px; }
+.disclaimer {
+  background: rgba(242, 101, 34, 0.08);
+  border: 1px solid rgba(242, 101, 34, 0.25);
+  color: var(--orange-2);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.card {
+  background: var(--navy-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px 0;
+}
+
+label { display: block; font-weight: 600; margin-bottom: 6px; }
+.hint { display: block; color: var(--muted); font-weight: 400; font-size: 0.88rem; margin-top: 2px; }
+.field { margin-bottom: 14px; }
+input[type=file] {
+  width: 100%;
+  padding: 10px;
+  background: var(--navy-3);
+  color: var(--text);
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 8px;
+}
+
+button, .btn {
+  background: var(--orange);
+  color: #1a0d06;
+  font-weight: 700;
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+button:hover { filter: brightness(1.05); }
+
+.error {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid var(--high);
+  color: #ffd4d4;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.score {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+.badge.none { background: rgba(91, 211, 138, 0.2); color: var(--none); }
+.badge.low { background: rgba(126, 200, 227, 0.2); color: var(--low); }
+.badge.medium { background: rgba(245, 192, 66, 0.2); color: var(--medium); }
+.badge.high { background: rgba(255, 107, 107, 0.2); color: var(--high); }
+
+.finding { border-top: 1px solid var(--line); padding: 12px 0; }
+.finding:first-child { border-top: 0; }
+.finding h3 { margin: 0 0 4px; font-size: 1.02rem; }
+.finding p { margin: 0; color: var(--muted); }
+.sev { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-right: 6px; }
+.sev.high { color: var(--high); }
+.sev.medium { color: var(--medium); }
+.sev.low { color: var(--low); }
+.sev.info { color: var(--info); }
+
+dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; margin: 0; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+.diff { background: #07101c; padding: 12px; overflow-x: auto; border-radius: 8px; font-size: 0.82rem; }
+.diff .add { color: #7dffb3; }
+.diff .del { color: #ff9b9b; }
+.limits { color: var(--muted); font-size: 0.92rem; }
+footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
+a { color: var(--orange-2); }
+
+@media (min-width: 700px) {
+  button, .btn { width: auto; }
+  h1 { font-size: 2.1rem; }
+}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Trucker College · Trucking Godmother</p>
+      <h1>Rate Confirmation Checker</h1>
+      <p class="lede">Upload a rate confirmation PDF. Optionally add the broker’s original file or the email it arrived in. This prototype looks for signs the PDF was edited.</p>
+      <p class="disclaimer">This tool reports <strong>signs of editing</strong>. It is not proof of fraud and is not a legal finding. A retyped or printed-to-PDF document may show no signs at all.</p>
+    </header>
+
+    <form class="card" action="/analyze" method="post" enctype="multipart/form-data">
+      <div class="field">
+        <label for="pdf">Rate confirmation PDF (required)
+          <span class="hint">The copy you received from a dispatcher or carrier.</span>
+        </label>
+        <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
+      </div>
+      <div class="field">
+        <label for="original">Broker original PDF (optional)
+          <span class="hint">If the broker emailed you the original, compare mode is the strongest check.</span>
+        </label>
+        <input id="original" name="original" type="file" accept=".pdf,application/pdf">
+      </div>
+      <div class="field">
+        <label for="email">Forwarded email, raw .eml (optional)
+          <span class="hint">Used only to read Received headers for sending IP and approximate location.</span>
+        </label>
+        <input id="email" name="email" type="file" accept=".eml,.txt,message/rfc822">
+      </div>
+      <button type="submit">Check for signs of editing</button>
+    </form>
+
+    
+
+    
+      <section class="card" id="report">
+        <div class="score">
+          <div>
+            <p class="eyebrow">Result for tampered_incremental.pdf</p>
+            <span class="badge high">high</span>
+            <h2>High — several signs of editing</h2>
+            <p>This file shows strong signs of editing, such as an earlier revision, a covered rate, or money amounts that do not match a broker original. These are signs of editing, not proof of fraud.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>File details</h2>
+        <dl>
+          <dt>Pages</dt><dd>1</dd>
+          <dt>Creator</dt><dd>Example TMS 4.2</dd>
+          <dt>Producer</dt><dd>Example TMS 4.2</dd>
+          <dt>Created</dt><dd>2026-10-15 14:30:00 UTC-05:00</dd>
+          <dt>Modified</dt><dd>2026-10-15 14:30:00 UTC-05:00</dd>
+          <dt>EOF markers</dt><dd>2</dd>
+          <dt>Amounts found</dt>
+          <dd>
+            
+              $0.00, $1,950.00, $2,450.00
+            
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card">
+        <h2>Findings</h2>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> The PDF was saved with incremental updates (an earlier version may still be inside)</h3>
+            <p>This PDF has 2 end-of-file markers and 2 cross-reference pointers. Programs that edit an existing PDF often append a new section instead of rewriting the file. That leftover earlier copy can still be inside the file.</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> An earlier revision in the file shows different money amounts</h3>
+            <p>The earlier copy still stored in this PDF lists different figures than the final page: $2,450.00 → $1,950.00 (The earlier amount is still extractable in the final file; a new amount was added.). This is a strong sign the visible rate was changed after the original file was created. It is still a sign of editing, not by itself proof of fraud.</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev medium">medium</span> New fonts were added in a later revision</h3>
+            <p>Fonts that do not appear in the earlier copy: Times-Roman. New fonts are often added when someone types over an existing amount.</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> Rate-related text uses a font or size that does not match the rest of the page</h3>
+            <p>Edited rate fields are often typed in a different font than the original form. “$1,950.00” (font “Times-Roman” is a different family than the usual “Helvetica-Bold”, this font was added in a later revision of the file); “$1,950.00” (font “Times-Roman” is a different family than the usual “Helvetica-Bold”, this font was added in a later revision of the file)</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> A white box appears to be drawn over existing text</h3>
+            <p>A filled white rectangle sits on top of earlier text. This is a common way to hide an original rate and type a new number over it. page 1: white box over “$2,450.00, $1,950.00”; page 1: white box over “$2,450.00, $1,950.00”</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> More than one dollar amount is still in the file</h3>
+            <p>The extracted text includes these amounts: $0.00, $1,950.00, $2,450.00. When a rate is covered and retyped, the original figure is often still in the file.</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev info">info</span> No digital signature was found</h3>
+            <p>This file is not digitally signed. A signature would make later changes easier to spot. Most emailed rate confirmations are unsigned.</p>
+          </div>
+        
+          <div class="finding">
+            <h3><span class="sev high">high</span> The received PDF and the broker original show different money amounts</h3>
+            <p>Comparing the two files, the amounts do not match: $2,450.00 → $1,950.00 (The received copy still contains the original amount and also a new amount.). This is the strongest check this tool can run, because it uses the broker&#39;s original file as a reference. It is still a sign of editing, not by itself proof of fraud.</p>
+          </div>
+        
+      </section>
+
+      
+      <section class="card">
+        <h2>Earlier revision still in the file</h2>
+        <ul>
+          
+            <li>$2,450.00 → $1,950.00</li>
+          
+        </ul>
+      </section>
+      
+
+      
+      <section class="card">
+        <h2>Compare mode</h2>
+        
+          <ul>
+            
+              <li><strong>$2,450.00 → $1,950.00</strong></li>
+            
+          </ul>
+        
+        
+          <pre class="diff">--- broker original
++++ received copy
+@@ -35,3 +35,5 @@
+ The agreed rate is all-in unless accessorials are approved in writing by the broker.
+ Questions: dispatch@examplelogistics.test  ·  (555) 014-2200
+ Example Logistics LLC  ·  100 Broker Way, Chicago, IL 60601
+<span class="add">+$1,950.00</span>
+<span class="add">+$1,950.00</span>
+</pre>
+        
+      </section>
+      
+
+      
+
+      <section class="card">
+        <h2>Limits</h2>
+        <p class="limits">Limits of this check: if someone retypes the rate confirmation from scratch or prints it to a new PDF, metadata and font checks may find nothing. Comparing the driver&#39;s copy with the original the broker sent is the strongest test. Email headers can show the sending mail server&#39;s approximate location; a PDF itself usually does not store an IP address. This tool reports signs of editing. It does not prove fraud, and it is not a legal finding.</p>
+      </section>
+    
+
+    <footer>
+      Prototype for Trucker College. Not legal advice. Do not treat a score as proof of fraud.
+    </footer>
+  </div>
+</body>
+</html>
